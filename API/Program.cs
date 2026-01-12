@@ -1,4 +1,5 @@
 using API.Data;
+using API.Interfaces;
 using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors();
-builder.Services.AddScoped<API.Interfaces.ITokenService, API.Services.TokenService>();
+builder.Services.AddScoped<ITokenService, API.Services.TokenService>();
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -34,5 +36,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+try
+{
+    var context = services.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
+    await Seed.SeedUsers(context);
+}
+catch (Exception ex)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "An error occured during migration");
+}
 app.Run();
