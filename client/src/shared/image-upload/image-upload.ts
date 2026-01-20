@@ -32,6 +32,7 @@ protected imageSrc = signal<string | ArrayBuffer | null | undefined>(null);
 
     if (event.dataTransfer?.files.length) {
       const file = event.dataTransfer.files[0];
+      console.log(file,'d');
       this.previewImage(file);
       this.fileToUpload = file;
     }
@@ -43,6 +44,7 @@ protected imageSrc = signal<string | ArrayBuffer | null | undefined>(null);
   }
 
   onUploadFile() {
+    console.log(this.fileToUpload,'h');
     if (this.fileToUpload) {
       this.uploadFile.emit(this.fileToUpload);
     }
