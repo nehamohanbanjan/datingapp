@@ -8,7 +8,8 @@ const cache = new Map<string, HttpEvent<unknown>>();
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const busyService = inject(BusyService);
- const generateCacheKey = (url: string, params: HttpParams): string => {
+
+  const generateCacheKey = (url: string, params: HttpParams): string => {
     const paramString = params.keys().map(key => `${key}=${params.get(key)}`).join('&');
     return paramString ? `${url}?${paramString}` : url;
   }
@@ -27,7 +28,7 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     delay(500),
     tap((response) => {
-      cache.set(req.url, response);
+      cache.set(cacheKey, response);
     }),
     finalize(() => {
       busyService.idle();
