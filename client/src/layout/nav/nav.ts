@@ -21,10 +21,12 @@ export class Nav implements OnInit {
   protected creds: any = {};
   protected selectedTheme = signal<string>(localStorage.getItem('theme') || 'light');
   protected themes = themes;
+  protected loading = signal(false);
 
   ngOnInit(): void {
     document.documentElement.setAttribute('data-theme', this.selectedTheme());
   }
+
   handleSelectTheme(theme: string) {
     this.selectedTheme.set(theme);
     localStorage.setItem('theme', theme);
@@ -32,7 +34,14 @@ export class Nav implements OnInit {
     const elem = document.activeElement as HTMLDivElement;
     if (elem) elem.blur();
   }
+
+  handleSelectUserItem() {
+    const elem = document.activeElement as HTMLDivElement;
+    if (elem) elem.blur();
+  }
+
   login() {
+    this.loading.set(true);
     this.accountService.login(this.creds).subscribe({
       next: () => {
         this.router.navigateByUrl('/members');
@@ -43,6 +52,7 @@ export class Nav implements OnInit {
         this.toast.error(error.error);
         this.router.navigateByUrl('/');
       },
+      complete: () => this.loading.set(false),
     });
   }
 
